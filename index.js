@@ -2,46 +2,48 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
-// Middleware para manejar JSON
+// Middleware para parsear JSON en el cuerpo de la solicitud
 app.use(express.json());
 
-// Rutas
-app.get('/', (req, res) => {
-  res.send('Bienvenido a la página principal!');
-});
+// Lista en memoria para almacenar productos (simulación de una base de datos)
+let productos = [
+  { id: 1, nombre: 'Audifonos' },
+  { id: 2, nombre: 'Computadora' },
+  { id: 3, nombre: 'Laptop' }
+];
 
-app.get('/clientes', (req, res) => {
-  const clientes = [
-    { id: 1, nombre: 'Alan' },
-    { id: 2, nombre: 'Juan' },
-    { id: 3, nombre: 'Sergio' },
-  ];
-  res.json(clientes);
-});
-
-app.get('/productos', (req, res) => {
-  const productos = [
-    { id: 1, nombre: 'Audifonos' },
-    { id: 2, nombre: 'Computadora' },
-    { id: 3, nombre: 'Laptop' },
-  ];
-  res.json(productos);
-});
-
-// Configuración para POST, PUT y DELETE (solo ejemplos)
+// Ruta para agregar un nuevo producto
 app.post('/productos', (req, res) => {
   const nuevoProducto = req.body;
+  productos.push(nuevoProducto); // Agrega el nuevo producto a la lista
   res.status(201).send(`Producto ${nuevoProducto.nombre} agregado!`);
 });
 
+// Ruta para actualizar un producto existente
 app.put('/productos/:id', (req, res) => {
-  const id = req.params.id;
-  res.send(`Producto con ID ${id} actualizado!`);
+  const id = parseInt(req.params.id);
+  const nuevoNombre = req.body.nombre;
+  const producto = productos.find(p => p.id === id);
+
+  if (producto) {
+    producto.nombre = nuevoNombre; // Actualiza el nombre del producto
+    res.send(`Producto con ID ${id} actualizado a ${nuevoNombre}!`);
+  } else {
+    res.status(404).send('Producto no encontrado');
+  }
 });
 
+// Ruta para eliminar un producto existente
 app.delete('/productos/:id', (req, res) => {
-  const id = req.params.id;
-  res.send(`Producto con ID ${id} eliminado!`);
+  const id = parseInt(req.params.id);
+  const index = productos.findIndex(p => p.id === id);
+
+  if (index !== -1) {
+    productos.splice(index, 1); // Elimina el producto de la lista
+    res.send(`Producto con ID ${id} eliminado!`);
+  } else {
+    res.status(404).send('Producto no encontrado');
+  }
 });
 
 app.listen(port, () => {
